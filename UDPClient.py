@@ -20,3 +20,5 @@ if unpacked_msg[0] != 2882395322:
     print("Received a message which does not start with magic cookie.")
     print("Client exiting.")
     exit(0)
+
+print("Received offer from server!")

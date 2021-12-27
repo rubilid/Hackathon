@@ -7,15 +7,11 @@ from magicCookie import MagicCookie
 serverIp = "127.0.0.1"
 localPort = 13117
 bufferSize = 1024
-msgFromServer = "Hello UDP Client"
-# offerMsg = str(MagicCookie(0xabcddcba, 0x2, localPort))
 msg_magic_cookie = 0xabcddcba
 msg_type = 0x2
 msg_server_port = localPort
 structured_msg = struct.pack('IBH', msg_magic_cookie, msg_type, msg_server_port)
 
-# bytesToSend = str.encode(offerMsg)
-# print(hex(offerMsg))
 # Create a datagram socket
 UDPServerSocket = socket.socket(family=socket.AF_INET, type=socket.SOCK_DGRAM)
 # Bind to address and ip
@@ -34,33 +30,43 @@ class OfferSendingThread(threading.Thread):
         self.msg_magic_cookie = msg_magic_cookie
         self.msg_type = msg_type
         self.msg_server_port = msg_server_port
+        print("initialized offer!")
 
     def run(self):
         while clients_counter < 2:
-            UDPServerSocket.sendto(structured_msg, address)
-            print("offer sent!")
+            UDPServerSocket.sendto(self.structured_msg, (self.address, self.msg_server_port))
             time.sleep(1)
 
 
 while True:
     clients_counter = 0
-    bytesAddressPair = UDPServerSocket.recvfrom(bufferSize)
-    message = bytesAddressPair[0]
-    address = bytesAddressPair[1]
 
-    newthread = OfferSendingThread(UDPServerSocket, address, msg_magic_cookie, msg_type, msg_server_port)
+    newthread = OfferSendingThread(UDPServerSocket, serverIp, msg_magic_cookie, msg_type, msg_server_port)
     newthread.start()
     threads.append(newthread)
+    players_addresses = []
 
-    clientMsg = "Message from Client:{}".format(message)
-    clientIP = "Client IP Address:{}".format(address)
+    while clients_counter < 2:
+        bytesAddressPair = UDPServerSocket.recvfrom(bufferSize)
+        message = bytesAddressPair[0]
+        address = bytesAddressPair[1]
+        if address[0] == serverIp and address[1] == msg_server_port:
+            continue
+        else:
+            clients_counter += 1
+            clientMsg = "Message from Client:{}".format(message)
+            clientIP = "Client IP Address:{}".format(address)
+            print(clientMsg)
+            print(clientIP)
+            UDPServerSocket.sendto(structured_msg, address)
+            players_addresses.append(address)
+            # todo: create a TCP connection
 
-    print(clientMsg)
-    print(clientIP)
+    # todo: now we have 2 addresses in the form of (ip, port) in players_addresses with 2 TCP connections
 
-    # Sending a reply to client
-
-    # UDPServerSocket.sendto(bytesToSend, address)
 
     for t in threads:
         t.join()
+
+    # todo: delete this:
+    exit(0)
