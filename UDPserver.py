@@ -1,14 +1,20 @@
+import struct
 import socket
+import time
 from magicCookie import MagicCookie
+
+
 serverIp = "127.0.0.1"
 localPort = 13117
 bufferSize = 1024
 msgFromServer = "Hello UDP Client"
 # offerMsg = str(MagicCookie(0xabcddcba, 0x2, localPort))
-hex_msg = 0xabcddcba000000 + 0x2 + localPort
-offerMsg = str(hex(hex_msg))
-print(offerMsg)
-bytesToSend = str.encode(offerMsg)
+msg_magic_cookie = 0xabcddcba
+msg_type = 0x2
+msg_server_port = localPort
+structured_msg = struct.pack('IBH', msg_magic_cookie, msg_type, msg_server_port)
+
+# bytesToSend = str.encode(offerMsg)
 # print(hex(offerMsg))
 # Create a datagram socket
 UDPServerSocket = socket.socket(family=socket.AF_INET, type=socket.SOCK_DGRAM)
@@ -24,7 +30,9 @@ while True:
     message = bytesAddressPair[0]
 
     address = bytesAddressPair[1]
-    UDPServerSocket.sendto(bytesToSend, address)
+    while True:
+        UDPServerSocket.sendto(structured_msg, address)
+        time.sleep(1)
 
 
     clientMsg = "Message from Client:{}".format(message)
