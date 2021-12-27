@@ -2,6 +2,7 @@ import struct
 import socket
 
 msgFromClient = "Hello UDP Server"
+print('Client started, listening for offer requests...')
 bytesToSend = str.encode(msgFromClient)
 serverAddressPort = ("127.0.0.1", 13117)
 bufferSize = 1024
@@ -14,12 +15,8 @@ msgToPrint = "Message from Server {}".format(msgFromServer[0])
 msg = msgFromServer[0]
 unpacked_msg = struct.unpack('IBH', msg)
 print(unpacked_msg)
-#
-# msgToHex = int(msg2, base=16)
-# print("client rcvd hex number: " + hex(msgToHex))
-# cookieMask = 0xabcddcba000
-# if (msgToHex ^ cookieMask)  == 0:
-#     print("cookie format!")
-# print("unrecognized format!, " + hex((msgToHex ^ cookieMask)))
 
-print(msgToPrint)
+if unpacked_msg[0] != 2882395322:
+    print("Received a message which does not start with magic cookie.")
+    print("Client exiting.")
+    exit(0)
