@@ -10,8 +10,10 @@ UDPClientSocket = socket.socket(family=socket.AF_INET, type=socket.SOCK_DGRAM)
 # Send to server using created UDP socket
 UDPClientSocket.sendto(bytesToSend, serverAddressPort)
 msgFromServer = UDPClientSocket.recvfrom(bufferSize)
-msg = "Message from Server {}".format(msgFromServer[0])
-msg2 = msgFromServer[0]
+msgToPrint = "Message from Server {}".format(msgFromServer[0])
+msg = msgFromServer[0]
+unpacked_msg = struct.unpack('IBH', msg)
+print(unpacked_msg)
 #
 # msgToHex = int(msg2, base=16)
 # print("client rcvd hex number: " + hex(msgToHex))
@@ -20,4 +22,4 @@ msg2 = msgFromServer[0]
 #     print("cookie format!")
 # print("unrecognized format!, " + hex((msgToHex ^ cookieMask)))
 
-print(msg)
+print(msgToPrint)
