@@ -1,6 +1,7 @@
 import struct
 import socket
 
+team_name = "Lin\n"
 msgFromClient = "Hello UDP Server"
 print('Client started, listening for offer requests...')
 bytesToSend = str.encode(msgFromClient)
@@ -21,4 +22,10 @@ if unpacked_msg[0] != 2882395322:
     print("Client exiting.")
     exit(0)
 
-print("Received offer from server!")
+print("Received offer from " + str(msgFromServer[1]) + " attempting to connect...")
+TCPClientSocket = socket.socket(family=socket.AF_INET, type=socket.SOCK_STREAM)
+TCPClientSocket.connect(serverAddressPort)
+# sending team name to server
+# structured_msg = struct.pack('s', str.encode(team_name))
+structured_msg = str.encode(team_name)
+TCPClientSocket.send(structured_msg)
