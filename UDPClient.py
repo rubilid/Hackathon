@@ -30,3 +30,7 @@ TCPClientSocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 TCPClientSocket.connect((serverAddressPort[0], unpacked_msg[2]))
 structured_msg = str.encode(client_team_name)
 TCPClientSocket.send(structured_msg)
+
+# game starts:
+welcome_game_msg = TCPClientSocket.recv(bufferSize).decode()
+print(welcome_game_msg)
