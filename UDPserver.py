@@ -1,8 +1,10 @@
 import struct
-from socket import *
+# from socket import *
+import socket
+
 import threading
 import time
-import scapy
+# import scapy
 from magicCookie import MagicCookie
 
 serverIp = "127.0.0.1"
@@ -11,15 +13,16 @@ bufferSize = 1024
 server_ip_and_port = (serverIp, localPort)
 msg_magic_cookie = 0xabcddcba
 msg_type = 0x2
+port_for_cookie = 2140
 msg_server_port = localPort
-structured_msg = struct.pack('IBH', msg_magic_cookie, msg_type, msg_server_port)
+structured_msg = struct.pack('IBH', msg_magic_cookie, msg_type, port_for_cookie)
 #global
 clients_counter = -1  # will be initialized in the server
 # Create a datagram socket
 # UDPServerSocket = socket.socket(family=socket.AF_INET, type=socket.SOCK_DGRAM)
-UDPServerSocket = socket(AF_INET, SOCK_DGRAM)
-UDPServerSocket.setsockopt(SOL_SOCKET, SO_REUSEADDR, 1)
-UDPServerSocket.setsockopt(SOL_SOCKET, SO_BROADCAST, 1)
+UDPServerSocket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+UDPServerSocket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+UDPServerSocket.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
 # UDPServerSocket.setsockopt(sc.SOL_SOCKET, sc.SO_REUSEADDR, 1)
 # UDPServerSocket.setsockopt(sc.SOL_SOCKET, sc.SO_BROADCAST, 1)
 # Bind to address and ip
@@ -32,25 +35,27 @@ lock = threading.Lock()
 class TCPconnectionThread(threading.Thread):
     def __init__(self, server_ip_and_port):
         threading.Thread.__init__(self)
+        # self.server_socket = socket.socket(family=socket.AF_INET, type=socket.SOCK_STREAM)
         self.server_socket = socket.socket(family=socket.AF_INET, type=socket.SOCK_STREAM)
-        self.server_socket.bind(server_ip_and_port)
+        # self.server_socket.bind(server_ip_and_port)
+        self.server_socket.bind((serverIp, port_for_cookie))
+        self.server_socket.listen(1)
         print("new TCPconnectionThread")
 
     def run(self):
-        while 1:
-            self.server_socket.listen(1)
-            connection_socket, addr = self.server_socket.accept()
-            # todo: put team_name in try
-            team_name = connection_socket.recv(bufferSize).decode()
-            # name = struct.unpack('s', team_name)
-            # str_name = name.decode()
-            # connection_socket.send(team_name)
-            print("name: ", team_name)
-            lock.acquire()
-            count = globals()  # todo: lock this
-            count['clients_counter'] += 1
-            lock.release()
-            connection_socket.close()
+
+        connection_socket, addr = self.server_socket.accept()
+        # todo: put team_name in try
+        team_name = connection_socket.recv(bufferSize).decode()
+        # name = struct.unpack('s', team_name)
+        # str_name = name.decode()
+        # connection_socket.send(team_name)
+        print("name: ", team_name)
+        lock.acquire()
+        count = globals()  # todo: lock this
+        count['clients_counter'] += 1
+        lock.release()
+        connection_socket.close()
 
 
 class OfferSendingThread(threading.Thread):
@@ -97,22 +102,23 @@ while True:
             lock.release()
             break
         lock.release()
-        bytesAddressPair = UDPServerSocket.recvfrom(bufferSize)
-        message = bytesAddressPair[0]
-        address = bytesAddressPair[1]
+        # bytesAddressPair = UDPServerSocket.recvfrom(bufferSize)
+        # message = bytesAddressPair[0]
+        # address = bytesAddressPair[1]
         # need to verify that the received msg not sent from server itself
-        if address[0] == serverIp and address[1] == msg_server_port:
-            continue
-        else:
-            clientMsg = "Message from Client:{}".format(message)
-            clientIP = "Client IP Address:{}".format(address)
-            print(clientMsg)
-            print(clientIP)
-            UDPServerSocket.sendto(structured_msg, address)
-            players_addresses.append(address)
-            tcpThread = TCPconnectionThread((server_ip_and_port[0], server_ip_and_port[1]))
-            tcpThread.start()
-            threads.append(tcpThread)
+        # if address[0] == serverIp and address[1] == msg_server_port:
+        #     continue
+        # else:
+        #     clientMsg = "Message from Client:{}".format(message)
+        #     clientIP = "Client IP Address:{}".format(address)
+        #     print(clientMsg)
+        #     print(clientIP)
+            # UDPServerSocket.sendto(structured_msg, address)
+            # players_addresses.append(address)
+        tcpThread = TCPconnectionThread((server_ip_and_port[0], port_for_cookie))
+        tcpThread.start()
+        threads.append(tcpThread)
+        break
         # todo: close udp socket after while
         # todo: increase client_counter after receive group name
 
