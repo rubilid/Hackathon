@@ -1,8 +1,8 @@
 import struct
-import socket
+from socket import *
 import threading
 import time
-import scapy as sc
+import scapy
 from magicCookie import MagicCookie
 
 serverIp = "127.0.0.1"
@@ -16,7 +16,10 @@ structured_msg = struct.pack('IBH', msg_magic_cookie, msg_type, msg_server_port)
 #global
 clients_counter = -1  # will be initialized in the server
 # Create a datagram socket
-UDPServerSocket = socket.socket(family=socket.AF_INET, type=socket.SOCK_DGRAM)
+# UDPServerSocket = socket.socket(family=socket.AF_INET, type=socket.SOCK_DGRAM)
+UDPServerSocket = socket(AF_INET, SOCK_DGRAM)
+UDPServerSocket.setsockopt(SOL_SOCKET, SO_REUSEADDR, 1)
+UDPServerSocket.setsockopt(SOL_SOCKET, SO_BROADCAST, 1)
 # UDPServerSocket.setsockopt(sc.SOL_SOCKET, sc.SO_REUSEADDR, 1)
 # UDPServerSocket.setsockopt(sc.SOL_SOCKET, sc.SO_BROADCAST, 1)
 # Bind to address and ip
@@ -64,12 +67,13 @@ class OfferSendingThread(threading.Thread):
     def run(self):
         while True:
             lock.acquire()
-            count = globals()  # todo: lock this
+            count = globals()
             if count['clients_counter'] >= 2:
                 lock.release()
                 break
             lock.release()
-            UDPServerSocket.sendto(self.structured_msg, ("127.255.255.255", self.msg_server_port))
+            # UDPServerSocket.sendto(self.structured_msg, ("127.255.255.255", self.msg_server_port))
+            UDPServerSocket.sendto(self.structured_msg, ('<broadcast>', self.msg_server_port))
             # UDPServerSocket.sendall(self.structured_msg)
             time.sleep(1)
 
