@@ -6,6 +6,7 @@ import time
 # import scapy
 from random import randrange
 import select
+from termcolor import colored
 
 
 class bcolors:
@@ -25,8 +26,8 @@ clients_counter = -1  # will be initialized to 0 in the server
 lock = threading.Lock()  # use for dealing with clients_counter
 
 teamPort = 2140
-serverIp = "127.0.0.1"
-# serverIp = gethostbyname(gethostname())
+# serverIp = "127.0.0.1"
+serverIp = gethostbyname(gethostname())
 # serverIp = "172.18.0.140"
 localPort = 13117
 bufferSize = 1024
@@ -43,9 +44,9 @@ try:
     # Bind to address and ip
     UDPServerSocket.bind((serverIp, localPort))
 except Exception as e:
-    print(bcolors.FAIL + e + bcolors.ENDC)
+    print(str(bcolors.FAIL) + str(e) + str(bcolors.ENDC))
 
-print(bcolors.OKGREEN + "Server started, listening on IP address " + serverIp + bcolors.ENDC)
+print(str(bcolors.OKGREEN) + "Server started, listening on IP address " + serverIp + str(bcolors.ENDC))
 
 
 # this class represents a Offer Sending Thread.
@@ -83,7 +84,8 @@ class GameWelcomingThread(threading.Thread):
         try:
             self.connection_socket.send(str(welcome_msg).encode())
         except Exception as e:
-            print(bcolors.FAIL + e + bcolors.ENDC)
+            # print(colored('hello', 'red'))
+            print(str(bcolors.FAIL) + str(e) + str(bcolors.ENDC))
 
 
 # this class represents a Game Starter Thread.
@@ -154,9 +156,9 @@ class GameStarter():
             players_addresses[0][0].send(res_msg.encode())
             players_addresses[1][0].send(res_msg.encode())
         except Exception as e:
-            print(bcolors.FAIL + e + bcolors.ENDC)
+            print(str(bcolors.FAIL) + str(e) + str(bcolors.ENDC))
 
-        print(bcolors.BOLD + bcolors.OKCYAN + res_msg + bcolors.ENDC)
+        print(str(bcolors.BOLD) + str(bcolors.OKCYAN) + res_msg + str(bcolors.ENDC))
 
 
 # start sending offer announcements
@@ -168,7 +170,7 @@ try:
     server_socket.bind(('', teamPort))
     server_socket.listen()
 except Exception as e:
-    print(bcolors.FAIL + e + bcolors.ENDC)
+    print(str(bcolors.FAIL) + str(e) + str(bcolors.ENDC))
 
 while True:
     lock.acquire()
@@ -188,7 +190,7 @@ while True:
         try:
             client_team_name = connection_socket.recv(bufferSize).decode()
         except Exception as e:
-            print(bcolors.FAIL + e + bcolors.ENDC)
+            print(str(bcolors.FAIL) + str(e) + str(bcolors.ENDC))
         print(client_team_name)
         lock.acquire()
         count = globals()
@@ -200,6 +202,6 @@ while True:
     try:
         game_starter.start_game()
     except Exception as e:
-        print(bcolors.FAIL + e + bcolors.ENDC)
+        print(str(bcolors.FAIL) + str(e) + str(bcolors.ENDC))
 
     time.sleep(2)

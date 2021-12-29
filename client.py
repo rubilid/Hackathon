@@ -45,7 +45,7 @@ class ReadFromServerThread(threading.Thread):
 
 
 client_team_name = "Matilda\n"
-print(bcolors.BOLD + bcolors.OKGREEN + 'Client started, listening for offer requests...' + bcolors.ENDC)
+print(str(bcolors.BOLD) + str(bcolors.OKGREEN) + 'Client started, listening for offer requests...' + str(bcolors.ENDC))
 bufferSize = 1024
 # Create a UDP socket at client side
 try:
@@ -54,7 +54,7 @@ try:
     UDPClientSocket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
     UDPClientSocket.bind(('', 13117))
 except Exception as e:
-    print(bcolors.FAIL + e + bcolors.ENDC)
+    print(str(bcolors.FAIL) + str(e) + str(bcolors.ENDC))
 
 
 while True:
@@ -62,7 +62,7 @@ while True:
     try:
         msgFromServer = UDPClientSocket.recvfrom(bufferSize)
     except Exception as e:
-        print(bcolors.FAIL + e + bcolors.ENDC)
+        print(str(bcolors.FAIL) + str(e) + str(bcolors.ENDC))
     # if str((msgFromServer[1][0])) != '172.18.0.140':
     #     continue
 
@@ -72,13 +72,14 @@ while True:
     unpacked_msg = struct.unpack('IBH', msg)
 
     if unpacked_msg[0] != 2882395322:
-        print(bcolors.BOLD + bcolors.WARNING + "Received a message which does not start with magic cookie." + bcolors.ENDC)
-        print(bcolors.BOLD + bcolors.WARNING + "Client exiting."+ bcolors.ENDC)
+        print(str(bcolors.BOLD) + str(bcolors.WARNING) + "Received a message which does not start with magic cookie." + str(bcolors.ENDC))
+        print(str(bcolors.BOLD) + str(bcolors.WARNING) + "Client exiting."+ str(bcolors.ENDC))
         continue
         # exit(0)
 
-    print(bcolors.OKBLUE + "Received offer from " + str(msgFromServer[1]) + " attempting to connect..." + bcolors.ENDC)
+    print(str(bcolors.OKBLUE) + "Received offer from " + str(msgFromServer[1]) + " attempting to connect..." + str(bcolors.ENDC))
     structured_msg = str.encode(client_team_name)
+    welcome_game_msg = ''
     try:
         TCPClientSocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         TCPClientSocket.connect((msgFromServer[1][0], unpacked_msg[2]))
@@ -87,9 +88,9 @@ while True:
         # game starts:
         welcome_game_msg = TCPClientSocket.recv(bufferSize).decode()
     except Exception as e:
-        print(bcolors.FAIL + e + bcolors.ENDC)
+        print(str(bcolors.FAIL) + str(e) + str(bcolors.ENDC))
 
-    print(bcolors.OKBLUE + welcome_game_msg + bcolors.ENDC)
+    print(str(bcolors.OKBLUE) + welcome_game_msg + str(bcolors.ENDC))
 
     try:
         sendFromClientThread = SendFromClientThread()
@@ -99,5 +100,5 @@ while True:
         readFromServerThread.join()
         TCPClientSocket.close()
     except Exception as e:
-        print(bcolors.FAIL + e + bcolors.ENDC)
+        print(str(bcolors.FAIL) + str(e) + str(bcolors.ENDC))
     time.sleep(5)
