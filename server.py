@@ -34,19 +34,24 @@ bufferSize = 1024
 msg_magic_cookie = 0xabcddcba
 msg_type = 0x2
 msg_server_port = teamPort
-structured_msg = struct.pack('IBH', msg_magic_cookie, msg_type, msg_server_port)
+structured_msg = struct.pack(
+    'IBH', msg_magic_cookie, msg_type, msg_server_port)
 
-try:
-    # Create a datagram socket
-    UDPServerSocket = socket(AF_INET, SOCK_DGRAM)
-    UDPServerSocket.setsockopt(SOL_SOCKET, SO_REUSEADDR, 1)
-    UDPServerSocket.setsockopt(SOL_SOCKET, SO_BROADCAST, 1)
-    # Bind to address and ip
-    UDPServerSocket.bind((serverIp, localPort))
-except Exception as e:
-    print(str(bcolors.FAIL) + str(e) + str(bcolors.ENDC))
+while True:
+    try:
+        # Create a datagram socket
+        UDPServerSocket = socket(AF_INET, SOCK_DGRAM)
+        UDPServerSocket.setsockopt(SOL_SOCKET, SO_REUSEADDR, 1)
+        UDPServerSocket.setsockopt(SOL_SOCKET, SO_BROADCAST, 1)
+        # Bind to address and ip
+        UDPServerSocket.bind((serverIp, localPort))
+        break
+    except Exception as e:
+        print(str(bcolors.FAIL) + str(e) + str(bcolors.ENDC))
+        continue
 
-print(str(bcolors.OKGREEN) + "Server started, listening on IP address " + serverIp + str(bcolors.ENDC))
+print(str(bcolors.OKGREEN) + "Server started, listening on IP address " +
+      serverIp + str(bcolors.ENDC))
 
 
 # this class represents a Offer Sending Thread.
@@ -54,13 +59,15 @@ print(str(bcolors.OKGREEN) + "Server started, listening on IP address " + server
 class OfferSendingThread(threading.Thread):
     def __init__(self, server_socket, address, msg_magic_cookie, msg_type, teamPort, localPort):
         threading.Thread.__init__(self)
-        self.structured_msg = struct.pack('IBH', msg_magic_cookie, msg_type, teamPort)
+        self.structured_msg = struct.pack(
+            'IBH', msg_magic_cookie, msg_type, teamPort)
         self.server_socket = server_socket
         self.local_port = localPort
 
     def run(self):
         while True:
-            UDPServerSocket.sendto(self.structured_msg, ('<broadcast>', self.local_port))
+            UDPServerSocket.sendto(self.structured_msg,
+                                   ('<broadcast>', self.local_port))
             time.sleep(1)
 
 
@@ -142,7 +149,8 @@ class GameStarter():
         gameThread2.start()
 
         timeout = 10
-        reads, _, _ = select.select([players_addresses[0][0], players_addresses[1][0]], [], [], timeout)
+        reads, _, _ = select.select(
+            [players_addresses[0][0], players_addresses[1][0]], [], [], timeout)
         answer1 = ''
         answer2 = ''
         if len(reads) > 0:
@@ -150,7 +158,8 @@ class GameStarter():
                 answer1 = players_addresses[0][0].recv(bufferSize).decode()
             elif reads[0] == players_addresses[1][0]:
                 answer2 = players_addresses[1][0].recv(bufferSize).decode()
-        res_msg = self.decide_game_result(answer1, answer2, players_addresses[0][2], players_addresses[1][2], answer)
+        res_msg = self.decide_game_result(
+            answer1, answer2, players_addresses[0][2], players_addresses[1][2], answer)
 
         try:
             players_addresses[0][0].send(res_msg.encode())
@@ -158,19 +167,24 @@ class GameStarter():
         except Exception as e:
             print(str(bcolors.FAIL) + str(e) + str(bcolors.ENDC))
 
-        print(str(bcolors.BOLD) + str(bcolors.OKCYAN) + res_msg + str(bcolors.ENDC))
+        print(str(bcolors.BOLD) + str(bcolors.OKCYAN) +
+              res_msg + str(bcolors.ENDC))
 
 
 # start sending offer announcements
-newthread = OfferSendingThread(UDPServerSocket, serverIp, msg_magic_cookie, msg_type, teamPort, localPort)
+newthread = OfferSendingThread(
+    UDPServerSocket, serverIp, msg_magic_cookie, msg_type, teamPort, localPort)
 newthread.start()
 
-try:
-    server_socket = socket(family=AF_INET, type=SOCK_STREAM)
-    server_socket.bind(('', teamPort))
-    server_socket.listen()
-except Exception as e:
-    print(str(bcolors.FAIL) + str(e) + str(bcolors.ENDC))
+while True:
+    try:
+        server_socket = socket(family=AF_INET, type=SOCK_STREAM)
+        server_socket.bind(('', teamPort))
+        server_socket.listen()
+        break
+    except Exception as e:
+        print(str(bcolors.FAIL) + str(e) + str(bcolors.ENDC))
+        continue
 
 while True:
     lock.acquire()
@@ -191,6 +205,7 @@ while True:
             client_team_name = connection_socket.recv(bufferSize).decode()
         except Exception as e:
             print(str(bcolors.FAIL) + str(e) + str(bcolors.ENDC))
+            continue
         print(client_team_name)
         lock.acquire()
         count = globals()
@@ -203,5 +218,6 @@ while True:
         game_starter.start_game()
     except Exception as e:
         print(str(bcolors.FAIL) + str(e) + str(bcolors.ENDC))
+        continue
 
     time.sleep(2)
